@@ -11,6 +11,7 @@ export interface IProductCartItem {
   id: string;
   title: string;
   price: number;
+  removeProductFromCart: () => void;
 }
 
 export interface IBasketView {
