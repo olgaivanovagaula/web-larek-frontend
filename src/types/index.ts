@@ -4,7 +4,7 @@ export interface IProductItem {
     title: string;
     image: string;
     category: string;
-    price: number;
+    price: number | null;
 };
 
 export interface IProductCartItem {
@@ -26,11 +26,17 @@ export interface IDeliveryInfo {
 
 export interface IContactInfo {
     email: string;
-    telephone: string
+    phone: string
 };
 
+export interface IOrder extends IDeliveryInfo, IContactInfo {
+    total: number;
+    items: string[]
+}
+
 export interface ISuccessOrder {
-    totalPrice: number;
+    id: string;
+    total: number;
 };
 
 export interface IBasketData {
@@ -39,3 +45,4 @@ export interface IBasketData {
     removeItem:(item:IProductItem) => void;
     clearBasket:() => void
 }
+
