@@ -1,4 +1,8 @@
-export interface IProductItem {
+export type ApiResponseList<Type> = {
+	total: number;
+	items: Type[];
+};
+export interface ProductData {
 	id: string;
 	description: string;
 	image: string;
@@ -7,53 +11,46 @@ export interface IProductItem {
 	price: number | null;
 }
 
-export interface IBasketView {
+export interface AppState {
+	products: ProductData[];
+	basket: ProductData[];
+	order: OrderPayload;
+	orderResponse: OrderResponse | null;
+	preview: string | null;
+}
+export interface BasketState {
 	items: HTMLElement[];
 	price: number;
 	selected: string[];
 }
 
-export interface IDelivery {
+export interface ContactInfo {
+	phone: string;
+	email: string;
+}
+export interface DeliveryInfo {
 	address: string;
 	payment: string;
 }
 
-export interface IContact {
-	phone: string;
-	email: string;
+export interface OrderResponse {
+	id: string;
+	total: number;
 }
-
-export interface IOrder extends IDelivery, IContact {
+export interface OrderPayload extends DeliveryInfo, ContactInfo {
 	total: number;
 	items: string[];
 }
 
-export interface IOderResult {
-	id: string;
+export interface SuccessResponse {
 	total: number;
 }
+export type OrderFormErrors = Partial<
+	Omit<Record<keyof OrderPayload, string>, 'items'>
+>;
 
-export type FormErrors = Partial<Record<keyof IOrder, string>>;
-
-export interface ISuccess {
-	total: number;
-}
-
-export interface IAppState {
-	products: IProductItem[];
-	basket: IProductItem[];
-	order: IOrder;
-	orderResponse: IOderResult | null;
-	prewiew: string | null;
-}
-
-export type ApiListResponse<Type> = {
-	total: number;
-	items: Type[];
-};
-
-export interface ICardActions {
-    onClick?: (event: MouseEvent) => void;
-    onAddToBasket?: (item: IProductItem) => void;
-    onRemoveFromBasket?: (item: IProductItem) => void;
+export interface CardEventHandlers {
+	onClick?: (event: MouseEvent) => void;
+	onAddToBasket?: (item: ProductData) => void;
+	onRemoveFromBasket?: (item: ProductData) => void;
 }

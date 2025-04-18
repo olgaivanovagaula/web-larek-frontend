@@ -1,37 +1,45 @@
 import { Component } from './base/component';
 import { ensureElement } from './../utils/utils';
-import { ISuccess } from '../types';
+import { SuccessResponse } from '../types';
 
-interface ISuccessActions {
-	onClick: () => void;
+interface SuccessResponseActions {
+	onSuccessClick?: () => void;
 }
 
-export class Success extends Component<ISuccess> {
-	protected _closeButton: HTMLButtonElement;
-	protected _total: HTMLElement;
+//
+export class Success extends Component<SuccessResponse> {
+	private readonly totalDisplay: HTMLElement;
 
-	constructor(container: HTMLElement, protected actions?: ISuccessActions) {
-		super(container);
-		this._closeButton = ensureElement<HTMLButtonElement>(
+	private readonly closeButton: HTMLButtonElement;
+
+	constructor(
+		containerElement: HTMLElement,
+
+		private readonly actions?: SuccessResponseActions
+	) {
+		super(containerElement);
+
+		this.closeButton = ensureElement<HTMLButtonElement>(
 			'.order-success__close',
-			this.container
+			containerElement
 		);
-		this._total = ensureElement<HTMLElement>(
+
+		this.totalDisplay = ensureElement<HTMLElement>(
 			'.order-success__description',
-			this.container
+			containerElement
 		);
 
-		if (actions?.onClick) {
-			this._closeButton.addEventListener('click', actions.onClick);
-		}
+		this.actions?.onSuccessClick &&
+			this.closeButton.addEventListener('click', this.actions.onSuccessClick);
 	}
 
-	set total(value: number) {
-		this._total.textContent = `Списано ${value} синапсов`;
+	set totalAmount(total: number) {
+		this.totalDisplay.textContent = `Списано ${total} синапсов`;
 	}
 
-	render(data: ISuccess): HTMLElement {
-		this.total = data.total;
+	render(responseData: SuccessResponse): HTMLElement {
+		this.totalAmount = responseData.total;
+
 		return this.container;
 	}
 }

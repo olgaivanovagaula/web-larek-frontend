@@ -1,30 +1,53 @@
-import { Api } from './base/api';
-import { IOrder, IOderResult, IProductItem, ApiListResponse } from '../types';
+import { Api as BaseApi } from './base/api';
 
-export interface IAppAPI {
-	order: (order: IOrder) => Promise<IOderResult>;
-	getProductList: () => Promise<IProductItem[]>;
+import {
+	OrderPayload as OrderPayload,
+	OrderResponse as OrderResponse,
+	ProductData as ProductData,
+	ApiResponseList as ProductListResponse,
+} from '../types';
+
+export interface AppApiInterface {
+	fetchProductList: () => Promise<ProductData[]>;
+	processOrderSubmission: (payload: OrderPayload) => Promise<OrderResponse>;
 }
 
-export class AppApi extends Api implements IAppAPI {
-	readonly cdn: string;
+export class AppApi extends BaseApi implements AppApiInterface {
+	readonly contentDeliveryUrl: string;
 
-	constructor(cdn: string, baseUrl: string, options?: RequestInit) {
-		super(baseUrl, options);
+	constructor(
+		apiBaseUrl: string,
 
-		this.cdn = cdn;
+		contentDeliveryUrl: string,
+
+		config?: RequestInit
+	) {
+		super(apiBaseUrl, config);
+		this.contentDeliveryUrl = contentDeliveryUrl;
 	}
 
-	order(order: IOrder): Promise<IOderResult> {
-		return this.post('/order', order).then((data: IOderResult) => data);
+	fetchProductList(): Promise<ProductData[]> {
+		return this.get('/product')
+
+			.then((data: ProductListResponse<ProductData>) =>
+				data.items.map((item) => ({
+					...item,
+					image: `${this.contentDeliveryUrl}${item.image}`,
+				}))
+			)
+
+			.catch((err) => {
+				console.error('aElisst:', err);
+				throw new Error('Fai');
+			});
 	}
 
-	getProductList(): Promise<IProductItem[]> {
-		return this.get('/product').then((data: ApiListResponse<IProductItem>) =>
-			data.items.map((item) => ({
-				...item,
-				image: this.cdn + item.image,
-			}))
-		);
+	processOrderSubmission(payload: OrderPayload): Promise<OrderResponse> {
+		return this.post('/order', payload)
+			.then((response: OrderResponse) => response)
+			.catch((err) => {
+				console.error('Err order:', err);
+				throw new Error('on failed.');
+			});
 	}
 }

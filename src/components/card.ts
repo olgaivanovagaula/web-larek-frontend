@@ -1,148 +1,140 @@
+import { Component } from './base/component';
 import { ensureElement } from '../utils/utils';
 import { settings } from '../utils/constants';
+import { ProductData } from '../types';
 
-import { Component } from './base/component';
-
-import { IProductItem } from '../types';
-interface ICardActions {
-	onAddToBasket?: (item: IProductItem) => void;
-	onRemoveFromBasket?: (item: IProductItem) => void;
+interface ICardEventHandlers {
 	onClick?: (event: MouseEvent) => void;
+	onAddToBasket?: (item: ProductData) => void;
+	onRemoveFromBasket?: (item: ProductData) => void;
 }
 
-interface ICard extends IProductItem {
+interface ICard extends ProductData {
 	identifierCard?: string;
 }
 
 export class Card extends Component<ICard> {
-	private _title: HTMLElement;
+	private _categoryElement?: HTMLElement;
 
-	private _item: IProductItem;
-	private _isInBasket: boolean;
-	private _category?: HTMLElement;
-	private _price: HTMLElement;
-	private _description?: HTMLElement;
-	private _image?: HTMLImageElement;
-	private _button?: HTMLButtonElement;
+	private _buttonElement?: HTMLButtonElement;
+
+	private _productItem: ProductData;
+
+	private _isAddedToBasket: boolean;
+
+	private _descriptionElement?: HTMLElement;
+
+	private _titleElement: HTMLElement;
+
 	private _identifierCard?: HTMLElement;
+
+	private _imageElement?: HTMLImageElement;
+
+	private _priceElement: HTMLElement;
+
 	constructor(
-		container: HTMLElement,
-		item: IProductItem,
-		actions: ICardActions
+		containerElement: HTMLElement,
+		product: ProductData,
+		actionHandlers: ICardEventHandlers
 	) {
-		super(container);
+		super(containerElement);
+		this._identifierCard = containerElement.querySelector(
+			'.basket__item-index'
+		);
 
-		this._item = item;
-		this._isInBasket = false;
+		this._categoryElement = containerElement.querySelector('.card__category');
+		this._priceElement = ensureElement<HTMLElement>(
+			'.card__price',
+			containerElement
+		);
+		this._buttonElement =
+			containerElement.querySelector<HTMLButtonElement>('.card__button');
+		this._productItem = product;
+		this._isAddedToBasket = false;
 
-		this._identifierCard = container.querySelector('.basket__item-index');
-		this._button = ensureElement<HTMLButtonElement>('.card__button', container);
-		this._description = container.querySelector('.card__text');
-		this._image = container.querySelector('.card__image');
-		this._category = container.querySelector('.card__category');
-		this._price = ensureElement<HTMLElement>('.card__price', container);
+		this._descriptionElement = containerElement.querySelector('.card__text');
+		this._imageElement = containerElement.querySelector('.card__image');
+		this._titleElement = ensureElement<HTMLElement>(
+			'.card__title',
+			containerElement
+		);
+		this._initializeEventHandlers(actionHandlers);
+		this._renderProduct(product);
+	}
 
-		this._title = ensureElement<HTMLElement>('.card__title', container);
-
-		if (actions.onClick) {
-			this.container.addEventListener('click', actions.onClick);
+	private _handleBasketToggle(actions: ICardEventHandlers): void {
+		if (this._isAddedToBasket) {
+			actions.onRemoveFromBasket?.(this._productItem);
+		} else {
+			actions.onAddToBasket?.(this._productItem);
 		}
-
-		if (this._button) {
-			this._button.addEventListener('click', (event) => {
+		this.updateButtonState(!this._isAddedToBasket);
+	}
+	private _initializeEventHandlers(actions: ICardEventHandlers): void {
+		if (actions.onClick) {
+			this.addEventHandler(this.container, 'click', actions.onClick);
+		}
+		if (this._buttonElement) {
+			this.addEventHandler(this._buttonElement, 'click', (event) => {
 				event.stopPropagation();
-				this.toggleBasket(actions);
+				this._handleBasketToggle(actions);
 			});
 		}
-
-		this.render(item);
 	}
-
-	updateButton(isInBasket: boolean): void {
-		this._isInBasket = isInBasket;
-		if (this._button) {
-			this._button.textContent = !isInBasket
-				? 'Добавить в корзину'
-				: 'Удалить из корзины';
-		}
+	private _renderProduct(product: ProductData): void {
+		this.cardId = product.id;
+		this.cardTitle = product.title;
+		this.cardImage = product.image;
+		this.cardDescription = product.description;
+		this.cardCategory = product.category;
+		this.cardPrice = product.price || 0;
 	}
-
-	private toggleBasket(actions: ICardActions) {
-		if (this._isInBasket) {
-			actions.onRemoveFromBasket?.(this._item);
-		} else {
-			actions.onAddToBasket?.(this._item);
-		}
-		this.updateButton(!this._isInBasket);
-	}
-
-	render(item: IProductItem): HTMLElement {
-		this.title = item.title;
-		this.description = item.description;
-		this.category = item.category;
-		this.price = item.price || 0;
-		this.image = item.image;
-
-		this.id = item.id;
-		return this.container;
-	}
-
-	set id(value: string) {
-		this.container.dataset.id = value;
-	}
-
-	get id(): string {
+	get cardId(): string {
 		return this.container.dataset.id || '';
 	}
-	get identifierCard(): string {
-		return this._identifierCard?.textContent || '';
-	}
-	set identifierCard(value: string) {
-		this.setText(this._identifierCard, value);
+	set cardTitle(value: string) {
+		this.setText(this._titleElement, value);
 	}
 
-	get title(): string {
-		return this._title.textContent || '';
+	set cardImage(value: string) {
+		this.setImage(this._imageElement, value, this.cardTitle);
+	}
+	set cardId(value: string) {
+		this.setAttribute(this.container, 'data-id', value);
+	}
+	set cardDescription(value: string) {
+		this.setText(this._descriptionElement, value);
 	}
 
-	set title(value: string) {
-		this.setText(this._title, value);
-	}
-
-	set description(value: string) {
-		this.setText(this._description, value);
-	}
-	set image(value: string) {
-		this.setImage(this._image, value, this.title);
-	}
-
-	get category(): string {
-		return this._category?.textContent || '';
-	}
-	set category(value: string) {
-		this.setText(this._category, value);
-		if (this._category) {
-			this._category.classList.add(settings[value] || '');
+	set cardCategory(value: string) {
+		if (this._categoryElement) {
+			this.setText(this._categoryElement, value);
+			this.toggleClass(this._categoryElement, settings[value] || '', true);
 		}
 	}
-	disableButton(value: number | null) {
-		if (!value && this._button) {
-			this._button.disabled = true;
-		}
-	}
-	get price(): number {
-		return +this._price.textContent?.replace(/\D/g, '') || 0;
+	set cardPrice(value: number) {
+		this.setText(this._priceElement, value ? `${value} синапсов` : 'Бесценно');
+		this._disableButtonForFreeItems(value);
 	}
 
-	set price(value: number) {
-		this.setText(this._price, value ? `${value} синапсов` : 'Бесценно');
-		this.disableButton(value);
+	private _disableButtonForFreeItems(price: number): void {
+		if (!price && this._buttonElement) {
+			this.setDisabled(this._buttonElement, true);
+		} else if (this._buttonElement) {
+			this.setDisabled(this._buttonElement, false);
+		}
+	}
+	public updateButtonState(isInBasket: boolean): void {
+		this._isAddedToBasket = isInBasket;
+		if (this._buttonElement) {
+			this.setText(
+				this._buttonElement,
+				isInBasket ? 'Удалить из корзины' : 'Купить'
+			);
+		}
 	}
 
 	getContainer(): HTMLElement {
-		if (!this.container) {
-			throw new Error('Container for Card component is undefined.');
-		}
 		return this.container;
 	}
 }

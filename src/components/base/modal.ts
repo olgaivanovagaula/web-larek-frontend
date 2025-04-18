@@ -1,15 +1,22 @@
 import { IEvents } from './events';
 
-export const isModel = (obj: unknown): obj is Model<any> => {
+export const isModel = <T>(obj: unknown): obj is Model<T> => {
 	return obj instanceof Model;
 };
 
 export abstract class Model<T> {
+	protected state: Partial<T>;
+	setState(updates: Partial<T>, event?: string): void {
+		this.state = { ...this.state, ...updates };
+		if (event) {
+			this.emitChanges(event, updates);
+		}
+	}
 	constructor(data: Partial<T>, protected events: IEvents) {
-		Object.assign(this, data);
+		this.state = { ...data };
 	}
 
-	emitChanges(event: string, payload?: object) {
-		this.events.emit(event, payload ?? {});
+	protected emitChanges(event: string, payload: Partial<T> = {}): void {
+		this.events.emit(event, payload);
 	}
 }
