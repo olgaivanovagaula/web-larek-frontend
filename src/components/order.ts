@@ -2,7 +2,7 @@ import { OrderPayload, ContactInfo } from '../types';
 
 import { IEvents } from './base/events';
 
-import { Form } from './base/form';
+import { Form } from './form';
 
 import { ensureAllElements, ensureElement } from '../utils/utils';
 

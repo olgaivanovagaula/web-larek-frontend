@@ -1,20 +1,19 @@
 import { Component } from './base/component';
 import { ensureElement } from './../utils/utils';
 import { SuccessResponse } from '../types';
+import { AppState } from './appData';
+import { EventEmitter } from './base/events';
 
 interface SuccessResponseActions {
 	onSuccessClick?: () => void;
 }
 
-//
 export class Success extends Component<SuccessResponse> {
 	private readonly totalDisplay: HTMLElement;
-
 	private readonly closeButton: HTMLButtonElement;
 
 	constructor(
 		containerElement: HTMLElement,
-
 		private readonly actions?: SuccessResponseActions
 	) {
 		super(containerElement);
@@ -29,17 +28,17 @@ export class Success extends Component<SuccessResponse> {
 			containerElement
 		);
 
-		this.actions?.onSuccessClick &&
-			this.closeButton.addEventListener('click', this.actions.onSuccessClick);
+		this.closeButton.addEventListener('click', () => {
+			this.actions?.onSuccessClick?.();
+		});
 	}
 
 	set totalAmount(total: number) {
-		this.totalDisplay.textContent = `Списано ${total} синапсов`;
+		this.setText(this.totalDisplay, `Списано ${total} синапсов`);
 	}
 
 	render(responseData: SuccessResponse): HTMLElement {
 		this.totalAmount = responseData.total;
-
 		return this.container;
 	}
 }

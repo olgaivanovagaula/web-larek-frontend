@@ -31,7 +31,7 @@ export class Basket extends Component<BasketState> {
 	}
 	private _renderEmptyBasket(): void {
 		this._listElement.innerHTML = '<p>Корзина пуста</p>';
-		this._orderButton.disabled = true;
+		this.setDisabled(this._orderButton, true);
 	}
 	set items(items: HTMLElement[]) {
 		if (!items || items.length === 0) {
@@ -39,14 +39,14 @@ export class Basket extends Component<BasketState> {
 		} else {
 			this._listElement.replaceChildren(...items);
 			this._updateItemIndices();
-			this._orderButton.disabled = false;
+			this.setDisabled(this._orderButton, false);
 		}
 	}
 	private _updateItemIndices(): void {
 		this._listElement
 			.querySelectorAll('.basket__item-index')
 			.forEach((item, index) => {
-				item.textContent = (index + 1).toString();
+				this.setText(item as HTMLElement, (index + 1).toString());
 			});
 	}
 	private _initializeOrderButton(): void {

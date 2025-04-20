@@ -138,15 +138,14 @@ export class App {
 		card.updateButtonState(this.appData.basket.includes(item.id));
 		return card.getContainer();
 	}
-	private updateCard(itemId: string): void {
-		const cardElement = document.querySelector(`[data-id="${itemId}"]`);
-		if (!cardElement) return;
+	private cards: Record<string, Card> = {};
 
-		const button =
-			cardElement.querySelector<HTMLButtonElement>('.card__button');
-		const isInBasket = this.appData.basket.includes(itemId);
-		button && (button.textContent = isInBasket ? 'Убрать' : 'Купить');
+	private updateCard(itemId: string): void {
+		const card = this.cards[itemId];
+		if (!card) return;
+		card.updateButtonState(this.appData.basket.includes(itemId));
 	}
+
 	private handleBasketToggle(item: ProductData): void {
 		this.appData.basket.includes(item.id)
 			? this.appData.removeBasket(item.id)
@@ -257,12 +256,10 @@ export class App {
 	}): void {
 		this.appData.setContactField(field, value);
 	}
-
 	private processOrderSubmission(): void {
 		const { payment } = this.appData.order;
-		if (!payment) {
-			return;
-		}
+		if (!payment) return;
+
 		this.api
 			.processOrderSubmission({
 				...this.appData.order,
@@ -270,11 +267,14 @@ export class App {
 				items: this.appData.basket,
 			})
 			.then((res) => {
+				this.appData.clearBasket();
+				this.appData.orderReset();
+				this.appData.contactReset();
+				this.events.emit('basket:change');
+
 				this.modal.render({
 					content: this.successModal.render({ total: res.total }),
 				});
-				this.appData.clearBasket();
-				this.events.emit('basket:change');
 			})
 			.catch(console.error);
 	}
@@ -285,7 +285,7 @@ export class App {
 			this.contacts.valid = Object.keys(errors).length === 0;
 		};
 	}
-	
+
 	private modifyOrderForm(): (errors: Partial<DeliveryInfo>) => void {
 		return (errors: Partial<DeliveryInfo>): void => {
 			this.order.errors = errors;

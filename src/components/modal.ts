@@ -42,18 +42,16 @@ export class Modal extends Component<IModalData> {
 		});
 	}
 	closeModal(): void {
-		this.container.classList.remove('modal_active');
-		document.body.classList.remove('modal-open');
+		this.toggleClass(this.container, 'modal_active', false);
 		this.content = null;
-		console.log('Modal closed:', this.container);
 		this.eventDispatcher.emit('modal:closed');
 	}
+
 	openModal(): void {
-		this.container.classList.add('modal_active');
-		document.body.classList.add('modal-open');
-		console.log('Modal opened:', this.container);
+		this.toggleClass(this.container, 'modal_active', true);
 		this.eventDispatcher.emit('modal:opened');
 	}
+
 	get content(): HTMLElement {
 		return this.contentContainerElement;
 	}
