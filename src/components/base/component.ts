@@ -1,13 +1,15 @@
-
 export abstract class Component<T> {
 	protected constructor(protected readonly container: HTMLElement) {}
 
-	toggleClass(element: HTMLElement | null, className: string, force?: boolean): void {
+	toggleClass(
+		element: HTMLElement | null,
+		className: string,
+		force?: boolean
+	): void {
 		if (element) {
 			element.classList.toggle(className, force);
 		}
 	}
-
 
 	protected setText(element: HTMLElement | null, value: unknown): void {
 		if (element) {
@@ -70,6 +72,12 @@ export abstract class Component<T> {
 		}
 	}
 
+	protected getAllElements<E extends Element = HTMLElement>(
+		selector: string
+	): E[] {
+		return Array.from(this.container.querySelectorAll<E>(selector));
+	}	
+
 	protected removeEventHandler<K extends keyof HTMLElementEventMap>(
 		element: HTMLElement | null,
 		event: K,
@@ -79,8 +87,16 @@ export abstract class Component<T> {
 			element.removeEventListener(event, callback);
 		}
 	}
+	protected getElement<E extends Element = HTMLElement>(
+		selector: string
+	): E | null {
+		return this.container.querySelector<E>(selector);
+	}
 
-	protected setStyle(element: HTMLElement | null, styles: Partial<CSSStyleDeclaration>): void {
+	protected setStyle(
+		element: HTMLElement | null,
+		styles: Partial<CSSStyleDeclaration>
+	): void {
 		if (element) {
 			Object.assign(element.style, styles);
 		}

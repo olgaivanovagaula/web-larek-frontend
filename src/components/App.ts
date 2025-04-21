@@ -101,6 +101,14 @@ export class App {
 				console.log(`Выбран способ оплаты: ${value}`);
 			}
 		);
+		this.events.on('modal:closed', () => {
+		  this.appData.order.address = ""
+		  this.appData.order.payment = ""
+		  this.appData.order.email = ""
+		  this.appData.order.address = ""
+			this.order.reset();
+			this.contacts.reset();
+		});
 	}
 
 	private createSuccessModalInstance() {
@@ -112,6 +120,18 @@ export class App {
 					this.appData.orderReset();
 					this.appData.contactReset();
 					this.events.emit('basket:change');
+					this.order.render({
+						payment: '',
+						address: '',
+						valid: false,
+						errors: {},
+					});
+					this.contacts.render({
+						email: '',
+						phone: '',
+						valid: false,
+						errors: {},
+					});
 				},
 			}
 		);
@@ -160,27 +180,24 @@ export class App {
 	private updateBasket(): void {
 		const basketItems = this.appData
 			.getBasketProducts()
-			.map((item) => this.createBasketItem(item));
+			.map((item, index) => this.createBasketItem(item, index));
 		this.basket.render({ items: basketItems, price: this.appData.getTotal() });
 	}
 
-	private createBasketItem(product: ProductData): HTMLElement {
-		const cardElement = new Card(
+	private createBasketItem(product: ProductData, index: number): HTMLElement {
+		const card = new Card(
 			cloneTemplate(ensureElement<HTMLTemplateElement>('#card-basket')),
 			product,
 			{
 				onRemoveFromBasket: () => this.removeItemFromBasket(product.id),
 			}
-		).getContainer();
+		);
 
-		const deleteButton = cardElement.querySelector<HTMLButtonElement>(
-			'.basket__item-delete'
-		);
-		deleteButton?.addEventListener('click', () =>
-			this.removeItemFromBasket(product.id)
-		);
-		return cardElement;
+		card.setIndex(index); // ➕ Устанавливаем индекс
+
+		return card.getContainer();
 	}
+
 	private updateBasketCounter(): void {
 		this.page.counter = this.appData.basket.length;
 	}
@@ -269,9 +286,12 @@ export class App {
 			.then((res) => {
 				this.appData.clearBasket();
 				this.appData.orderReset();
+				this.order.reset();
+				this.contacts.reset();
 				this.appData.contactReset();
 				this.events.emit('basket:change');
 
+				this.events.emit('basket:change');
 				this.modal.render({
 					content: this.successModal.render({ total: res.total }),
 				});

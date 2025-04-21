@@ -45,6 +45,29 @@ export class Order extends Form<OrderPayload> {
 			this.toggleClass(button, 'button_alt-active', button.name === name);
 		});
 	}
+	public reset(): void {
+		// Убираем значения из инпутов
+		Object.values(this._inputs).forEach((input) => {
+			input.value = '';
+		});
+
+		// Убираем ошибки
+		this.setText(this._errors, '');
+		Object.keys(this._inputs).forEach((key) => {
+			const errorElement = this._inputs[key]?.nextElementSibling as HTMLElement;
+			if (errorElement) {
+				this.setText(errorElement, '');
+			}
+		});
+
+		// Убираем активный класс у кнопок оплаты
+		this._payment.forEach((button) => {
+			this.toggleClass(button, 'button_alt-active', false);
+		});
+
+		// Отключаем кнопку submit
+		this.setDisabled(this._submit, true);
+	}
 }
 
 export class Contact extends Form<ContactInfo> {

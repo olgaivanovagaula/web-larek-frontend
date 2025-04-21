@@ -6,7 +6,7 @@ import {
 	ContactInfo,
 	AppState as AppStateType,
 } from '../types';
-import { Model } from './base/modal';
+import { Model } from './base/model';
 import { EventEmitter } from './base/events';
 
 //
@@ -104,6 +104,7 @@ export class AppState extends Model<AppStateType> {
 		return Object.keys(errors).length === 0;
 	}
 	orderReset(): void {
+		console.log(this.order)
 		this.order.payment = '';
 		this.order.address = '';
 		this.events.emit('order:reset', this.order);

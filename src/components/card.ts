@@ -74,13 +74,30 @@ export class Card extends Component<ICard> {
 		if (actions.onClick) {
 			this.addEventHandler(this.container, 'click', actions.onClick);
 		}
+
 		if (this._buttonElement) {
 			this.addEventHandler(this._buttonElement, 'click', (event) => {
 				event.stopPropagation();
 				this._handleBasketToggle(actions);
 			});
 		}
+
+		const deleteButton = this.getElement<HTMLButtonElement>(
+			'.basket__item-delete'
+		);
+		if (deleteButton && actions.onRemoveFromBasket) {
+			this.addEventHandler(deleteButton, 'click', (event) => {
+				event.stopPropagation();
+				actions.onRemoveFromBasket?.(this._productItem);
+			});
+		}
 	}
+	public setIndex(index: number): void {
+		if (this._identifierCard) {
+			this.setText(this._identifierCard, (index + 1).toString());
+		}
+	}
+
 	private _renderProduct(product: ProductData): void {
 		this.cardId = product.id;
 		this.cardTitle = product.title;

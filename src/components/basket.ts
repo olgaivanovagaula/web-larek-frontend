@@ -38,17 +38,11 @@ export class Basket extends Component<BasketState> {
 			this._renderEmptyBasket();
 		} else {
 			this._listElement.replaceChildren(...items);
-			this._updateItemIndices();
+
 			this.setDisabled(this._orderButton, false);
 		}
 	}
-	private _updateItemIndices(): void {
-		this._listElement
-			.querySelectorAll('.basket__item-index')
-			.forEach((item, index) => {
-				this.setText(item as HTMLElement, (index + 1).toString());
-			});
-	}
+
 	private _initializeOrderButton(): void {
 		this._orderButton.addEventListener('click', () => {
 			this.events.emit('order:open');
@@ -66,8 +60,6 @@ export class Basket extends Component<BasketState> {
 		if (typeof data?.price === 'number') {
 			this.totalPrice = data.price;
 		}
-
-		this._updateItemIndices();
 
 		return this.container;
 	}
